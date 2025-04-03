@@ -1,0 +1,91 @@
+package com.pets.Platform.Note.Controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.pets.Platform.Note.Service.Note_Service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.ResponseEntity;
+
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", exposedHeaders = "Authorization")
+@RestController
+@RequestMapping("/Pets-social")
+public class Note_Controller {
+	
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
+	@Autowired
+	private Note_Service note_service;
+	
+	
+	@GetMapping("/getSaveNote")
+	public ResponseEntity<Map<String, Object>>getsavenote(@RequestParam("Id") String id,
+			@RequestParam("Type") String type){
+		Map<String ,Object> response =new HashMap<String ,Object>();
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PostMapping("/SendNote")
+	public ResponseEntity<Map<String , Object>> SendNote(@RequestBody Map<String, Object> info){
+		Map<String, Object> response =new HashMap<String, Object>();
+		logger.info("요청 데이터 :" + info);
+		response = note_service.send_note(info);
+		if(response.get("resultcode").equals(206)) {
+			logger.info("일부분 전송 완료");
+			return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT).body(response);
+		}
+		else if(response.get("resultcode").equals(404)) {
+			logger.info("1개의 쪽지도 전달 하지 못함");
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@GetMapping("/getNote")
+	public ResponseEntity<Map<String, Object>>getNote(@RequestParam("Id") String id,
+			@RequestParam("Type") String  type){
+		Map<String ,Object> response = new HashMap<String ,Object>();
+        response =note_service.getNote(id, type);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PostMapping("/saveNote")
+	public ResponseEntity<Map<String , Object>> saveNote(@RequestBody Map<String, Object> info){
+		
+		Map<String, Object> response =new HashMap<String, Object>();
+		response = note_service.savenote(info);
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PostMapping("/readNote")
+	public ResponseEntity<Map<String, Object>>readNote(@RequestBody Map<String, Object> info){
+		Map<String, Object> response =new HashMap<String, Object>();
+		response = note_service.readnote(info);
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+	@PostMapping("/DeleteNote")
+	public ResponseEntity<Map<String, Object>> deletenote(@RequestBody Map<String, Object> info){
+		Map<String, Object> response =new HashMap<String, Object>();
+		response = note_service.deletenote(info);
+		
+		return ResponseEntity.status(HttpStatus.OK).body(response);
+	}
+	
+
+}

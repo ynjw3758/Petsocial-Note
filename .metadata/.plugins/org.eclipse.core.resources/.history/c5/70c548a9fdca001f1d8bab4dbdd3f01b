@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.pets.Platform.Note.mapper.Note_Mapper">
+<insert id="SaveSendNote" parameterType="java.util.HashMap">
+insert into sendnote(senduser, senduserimg, receiveuser, receiveuserimg, state, writetime, noteid, content)
+values(#{SendUser} ,#{SendUserImg} ,#{ReceiveUser} ,#{ReceiveUserImg}, #{State}, #{writetime}, #{noteid}, #{content});
+</insert>
+<insert id="SaveReceiveNote" parameterType="java.util.HashMap">
+insert into receivenote(senduser, senduserimg, receiveuser, receiveuserimg, state, writetime, noteid, content)
+values(#{SendUser} ,#{SendUserImg} ,#{ReceiveUser} ,#{ReceiveUserImg}, #{State}, #{writetime}, #{noteid}, #{content});
+</insert>
+
+<select id="IsallBlock" parameterType="String" resultType="boolean">
+select noteallblock from usersetting where userid =(select id from userinfo where nickname=#{Nickname});
+</select>
+<select id="getBlockPerson" parameterType="java.util.HashMap" resultType="boolean">
+select exists (select 1 from noteblocklist 
+where connectid =(select connectid from userinfo where nickname=#{fromuser}) and touser=(select id from userinfo
+where nickname=#{touser}));
+</select>
+<select id="GetReceiveNote" parameterType="String" resultType="java.util.HashMap">
+select state, senduser as user , senduserimg as img, readtime, writetime, noteid, content
+from receivenote  where receiveuser =(select nickname from userinfo where id=#{Id}) and savecheck=false;
+</select>
+
+<select id="GetSendNote" parameterType="String" resultType="java.util.HashMap">
+select  state, receiveuser as user , receiveuserimg as img ,readtime, writetime, noteid, content
+from sendnote  where senduser =(select nickname from userinfo where id=#{Id}) and savecheck=false;
+</select>
+<update id="ReadSendNote" parameterType="java.util.HashMap">
+update sendnote
+set state ='R', readtime =#{readtime}
+where noteid=#{Noteid};
+</update>
+<update id="ReadReceiveNote" parameterType="java.util.HashMap">
+update receivenote
+set state ='R', readtime =#{readtime}
+where noteid=#{Noteid};
+</update>
+<delete id="AllRedelete" parameterType="String">
+delete from receivenote where receiveuser=(select nickname from userinfo where id=#{Id});
+</delete>
+<delete id="AllSedelete" parameterType="String">
+delete from sendnote where senduser=(select nickname from userinfo where id=#{Id});
+</delete>
+<delete id="selectRedelete" parameterType="java.util.HashMap">
+delete from receivenote where receiveuser=(select nickname from userinfo where id=#{Id}) and
+noteid=#{Noteid};
+</delete>
+<delete id="selectSedelete" parameterType="java.util.HashMap">
+delete from sendnote where senduser=(select nickname from userinfo where id=#{Id}) and
+noteid=#{Noteid};
+</delete>
+</mapper>
