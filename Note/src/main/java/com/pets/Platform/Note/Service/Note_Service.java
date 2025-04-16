@@ -2,6 +2,7 @@ package com.pets.Platform.Note.Service;
 
 import java.text.SimpleDateFormat;
 
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import java.util.ArrayList;
 import java.util.Date;
@@ -233,7 +234,6 @@ public class Note_Service {
 	@Transactional
 	public Map<String , Object> send_note(Map<String, Object> info){
 		Map<String, Object> data = new HashMap<String, Object>();
-		Map<String, Object> insert_data = new HashMap<String, Object>();
 		Map<String, Object> ischeckblock = new HashMap<String, Object>();
 		List<String> User_List = new ArrayList<String>();
 		List<String> Block_List = new ArrayList<String>();
@@ -275,18 +275,20 @@ public class Note_Service {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm");
 				String fileDate = sdf.format(date);
 				String noteid = UUID.randomUUID().toString();
-				insert_data.put("content", content);
-				insert_data.put("SendUser", senuser);
-				insert_data.put("SendUserImg", SendUserImg);
-				insert_data.put("State", "N");
-				insert_data.put("writetime", fileDate);
-				insert_data.put("noteid", noteid);
-				insert_data.put("ReceiveUser", User_List.get(i).toString());
-				insert_data.put("ReceiveUserImg", User_profile.get(i).toLowerCase());
-				real_sendnote.add(insert_data);
+				Map<String, Object> send_user = new HashMap<>();
+				send_user.put("content", content);
+				send_user.put("SendUser", senuser);
+				send_user.put("SendUserImg", SendUserImg);
+				send_user.put("State", "N");
+				send_user.put("writetime", fileDate);
+				send_user.put("noteid", noteid);
+				send_user.put("ReceiveUser", User_List.get(i).toString());
+				send_user.put("ReceiveUserImg", User_profile.get(i).toLowerCase());
+				logger.info("User_List :" + User_List.get(i));
+				real_sendnote.add(send_user);
 				SqlSession sqlSession = sqlSessionFactory.openSession(ExecutorType.BATCH);
 				Note_Mapper mapper = sqlSession.getMapper(Note_Mapper.class);
-
+                 
 			}
 
 		}
@@ -296,18 +298,25 @@ public class Note_Service {
 			Map<String, Object> send = new HashMap<String, Object>();
 			Map<String, Object> receive = new HashMap<String, Object>();
 			int retvalues=0 ,retvalues2=0;
-			for(int k=0; k<real_sendnote.size(); k++ ) {
-				send = mapper.SaveSendNote(insert_data);
-				receive=mapper.SaveReceiveNote(insert_data);
-				logger.info("retvalue ;" + retvalues);
-				logger.info("retvalues :" + retvalues2);
+		   try {
+			for(int k=0; k<real_sendnote.size(); k++ ) {				
+				mapper.SaveSendNote(real_sendnote.get(k));
+				mapper.SaveReceiveNote(real_sendnote.get(k));
+
 			}
 			sqlSession.flushStatements(); // 쿼리전송
 			sqlSession.commit(); // 커밋
 			sqlSession.close(); // 닫기
 			sqlSession.clearCache(); // 캐시비우기
-			
+		   }catch(Exception e) {
+			   logger.error("insert 에러 발생");
+			   sqlSession.rollback();
+		   }finally {
+			   sqlSession.close(); 
+		   }
 		}
+		
+		
 	     if(Block_List.isEmpty()) {
           data.put("resultcode", 200);
           data.put("resultmsg", "success");

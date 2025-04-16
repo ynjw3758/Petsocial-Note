@@ -11,9 +11,9 @@ import org.springframework.stereotype.Repository;
 public interface Note_Mapper {
 	
 	/*---보낸 쪽지 테이블 저장 ---*/
-	public Map<String, Object> SaveSendNote(Map<String , Object> info);
+	public /*Map<String, Object>*/ void SaveSendNote(Map<String , Object> info);
 	/*---받은 쪽지 테이블 저장 ---*/
-	public Map<String, Object> SaveReceiveNote(Map<String , Object> info);
+	public /*Map<String, Object>*/ void  SaveReceiveNote(Map<String , Object> info);
 	/*---쪽지 전체 차단 유무---*/
 	public boolean IsallBlock(String Nickname);
 	/*--특정 인물 쪽지 차단---*/
